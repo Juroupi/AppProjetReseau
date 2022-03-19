@@ -18,16 +18,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.net.Socket;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,12 +36,13 @@ public class MainActivity extends AppCompatActivity {
     Button sendButton;
     EditText messageInput;
     LinearLayout messageList;
+    ScrollView scrollView;
 
     static BluetoothAdapter bluetoothAdapter;
     static Map<String, BluetoothDevice> pairedDevices;
     static BluetoothSocket socket;
     static OutputStream socketOutput;
-    static BufferedInputStream socketInput;
+    static InputStream socketInput;
     static int channel;
     static boolean initialized = false;
     static ArrayList<Pair<String, String>> savedMessageList;
@@ -86,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
     void startReceiveMessageThread() {
         receiveMessageThread = new Thread(this::receiveMessages);
         receiveMessageThread.start();
+    }
+
+    void scrollToEnd() {
+        scrollView.postDelayed(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN), 100);
     }
 
     void hideKeyboard() {
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 socket.connect();
                 socketOutput = socket.getOutputStream();
-                socketInput = new BufferedInputStream(socket.getInputStream());
+                socketInput = socket.getInputStream();
                 startReceiveMessageThread();
                 displayMessage("info", "connecté");
             } catch (Exception e) {
@@ -311,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 sendMessage(text);
             }
 
+            scrollToEnd();
             hideKeyboard();
         }
     }
@@ -324,6 +326,7 @@ public class MainActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.sendButton);
         messageInput = findViewById(R.id.messageInput);
         messageList = findViewById(R.id.messageList);
+        scrollView = findViewById(R.id.scrollView);
 
         init();
 
