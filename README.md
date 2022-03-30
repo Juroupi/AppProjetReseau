@@ -8,3 +8,5 @@ Application android pour communiquer en bluetooth avec un serveur sur un autre a
 - `connect <nom>` : se connecter à un appareil
 - `disconnect` : se déconnecter de l'appareil
 - `stop` : envoyer le message `stop` et se déconnecter
+- `username` : afficher son pseudo
+- `username <pseudo>` : changer son pseudo
