@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     static boolean initialized = false;
     static ArrayList<Pair<String, String>> savedMessageList;
     static Thread receiveMessageThread;
+    static String username;
 
     void init() {
 
@@ -64,6 +65,13 @@ public class MainActivity extends AppCompatActivity {
             receiveMessageThread = null;
 
             initialized = true;
+
+            username = android.os.Build.MODEL;
+            if (username == null) {
+                username = "guest" + (int)(Math.random() * 1000);
+            } else {
+                username = username.replaceAll("\\s+", "_");
+            }
         }
 
         else {
@@ -242,7 +250,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             runOnUiThread(() -> {
-                displayMessage("reçu", message);
+                String[] pieces = message.split("\\s+", 2);
+                if (pieces.length == 2) {
+                    if (!username.equals(pieces[0])) {
+                        displayMessage(pieces[0], pieces[1]);
+                    }
+                } else {
+                    displayMessage("anonyme", message);
+                }
             });
         }
     }
@@ -250,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
     void sendMessage(String message) {
         if (socket != null) {
             try {
-                socketOutput.write(message.getBytes());
+                socketOutput.write((username + " " + message).getBytes());
                 displayMessage("envoyé", message);
             } catch (Exception e) {
                 displayMessage("erreur", e.toString());
@@ -308,6 +323,11 @@ public class MainActivity extends AppCompatActivity {
                 displayMessage("channel", Integer.toString(channel));
             } else if (text.startsWith("channel ")) {
                 setChannel(text.substring(8).trim());
+            } else if (text.equals("username")) {
+                displayMessage("username", username);
+            } else if (text.startsWith("username ")) {
+                username = text.substring(9).trim().replaceAll("\\s+", "_");
+                displayMessage("username", username);
             } else {
                 sendMessage(text);
             }
